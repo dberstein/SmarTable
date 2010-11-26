@@ -139,7 +139,7 @@ class SmarTable extends Zend_Controller_Action_Helper_Abstract
     )
     {
         $html = '<' . $element . '>';
-        foreach ($data as $row) {}
+        foreach ($data as $row) {
             $html = sprintf(
                 '<%s$1>%s$2</%s$1>',
                 $rowElement,
