@@ -1,0 +1,9 @@
+SmarTable
+=========
+
+A plugin for Zend_View that render smartly any descendant of Zend_Db_Table_Abstract.
+
+Features:
+ - Renders tabular data
+ - Rendered data is sortable
+ - Rendered data is paginated
