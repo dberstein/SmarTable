@@ -7,12 +7,21 @@ UNIQ=`which uniq`
 SED=`which sed`
 CAT=`which cat`
 
+if [ $? -ne 1 ]
+then
+    echo "Usage: $0 <file>"
+    echo ""
+    echo "Writes to <file> the virtual host configuration."
+    exit 1
+fi
+
 # Absolute path to example application's root
 cd "`dirname $0`/.."
 PATH="`pwd`"
 
 # Apache virtuel host configuration file
-VHOST="$PATH/application/configs/vhost.conf"
+VHOST_SRC="$PATH/application/configs/vhost-template"
+VHOST_DST="$1"
 
 # For each file with placeholders...
 for FILE in "$VHOST"
@@ -29,7 +38,7 @@ do
         REGEX="s/${P//\//\\/}/${REPLACEMENT//\//\\/}/g"
 
         # Replace value pof placeholder
-        $SED -i -e "${REGEX}" "${VHOST}"
+        $SED -e "${REGEX}" "${VHOST_SRC}" > "${VHOST_DST}"
     done
 done
 
