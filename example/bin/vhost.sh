@@ -5,9 +5,9 @@ GREP=`which grep`
 SORT=`which sort`
 UNIQ=`which uniq`
 SED=`which sed`
-CAT=`which cat`
+CP=`which cp`
 
-if [ $? -ne 1 ]
+if [ $# -ne 1 ]
 then
     echo "Usage: $0 <file>"
     echo ""
@@ -16,29 +16,37 @@ then
 fi
 
 # Absolute path to example application's root
+ORIG_PWD="`pwd`"
 cd "`dirname $0`/.."
 PATH="`pwd`"
 
 # Apache virtuel host configuration file
 VHOST_SRC="$PATH/application/configs/vhost-template"
-VHOST_DST="$1"
+VHOST_DST="${ORIG_PWD}/$1"
+
+# Copy inital template to destination
+$CP "${VHOST_SRC}" "${VHOST_DST}"
 
 # For each file with placeholders...
-for FILE in "$VHOST"
+for FILE in "$VHOST_SRC"
 do
+    echo "Generating file ${VHOST_DST} ..."
+
     # Extract placeholders present in file and...
     PLACEHOLDERS=`${GREP} -RoE '\{[a-zA-Z_]+\}' "${FILE}" | ${SORT} | ${UNIQ}`
     for P in $PLACEHOLDERS
     do
         # Find value for placeholder
         eval REPLACEMENT="\$$P"
-        echo "${P} -> ${REPLACEMENT}..."
+        echo "Replacing ${P} for ${REPLACEMENT}"
 
         # Expression for replacement
         REGEX="s/${P//\//\\/}/${REPLACEMENT//\//\\/}/g"
 
         # Replace value pof placeholder
-        $SED -e "${REGEX}" "${VHOST_SRC}" > "${VHOST_DST}"
+        $SED -i "" -e "${REGEX}" "${VHOST_DST}"
     done
 done
 
+# Restore PWD
+cd "$ORIG_PWD"
