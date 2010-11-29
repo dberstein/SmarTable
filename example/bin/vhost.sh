@@ -5,6 +5,9 @@ GREP=`which grep`
 SORT=`which sort`
 UNIQ=`which uniq`
 SED=`which sed`
+if [ -n "$SED" ];then
+    SED=`which gsed`
+fi
 CP=`which cp`
 
 # Preserve current working directory value
