@@ -4,10 +4,10 @@
 GREP=`which grep`
 SORT=`which sort`
 UNIQ=`which uniq`
-SED=`which sed`
+SED=`which gsed`
 if [ -z "$SED" ]
 then
-    SED=`which gsed`
+    SED=`which sed`
 fi
 CP=`which cp`
 
