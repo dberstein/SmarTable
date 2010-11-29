@@ -5,45 +5,66 @@ GREP=`which grep`
 SORT=`which sort`
 UNIQ=`which uniq`
 SED=`which sed`
-CAT=`which cat`
 CP=`which cp`
 
-if [ $# -ne 1 ]
-then
-    echo "Usage: $0 <file>"
-    echo ""
-    echo "Writes to <file> the virtual host configuration."
-    exit 1
-fi
+# Preserve current working directory value
+ORIG_PWD="`pwd`"
+
+# Defaults
+APPLICATION_DOMAIN="example.local"
+APPLICATION_ENVIRONMENT="development"
+
+# Parse parameters
+case "$#" in
+    1)
+        ;;
+    2)
+        APPLICATION_DOMAIN="$2"
+        ;;
+    3)
+        APPLICATION_DOMAIN="$2"
+        APPLICATION_ENVIRONMENT="$3"
+        ;;
+    *)
+        echo "Usage: $0 <file> [<domain>=${APPLICATION_DOMAIN} [<environment>=${APPLICATION_ENVIRONMENT}]]"
+        echo ""
+        echo "Writes to <file> the virtual host configuration."
+        exit 1
+        ;;
+esac
 
 # Absolute path to example application's root
-ORIG_PWD="`pwd`"
 cd "`dirname $0`/.."
-PATH="`pwd`"
+APPLICATION_ROOT="`pwd`"
 
-# Apache virtuel host configuration file
-VHOST_SRC="$PATH/application/configs/vhost-template"
-VHOST_DST="${ORIG_PWD}/$1"
+# Template source
+TEMPLATE_FILE="${APPLICATION_ROOT}/application/configs/vhost-template"
 
-# For each file with placeholders...
-for FILE in "$VHOST_SRC"
+# Detination file
+DESTINATION_FILE="${ORIG_PWD}/$1"
+
+# Copy template file
+$CP "${TEMPLATE_FILE}" "${DESTINATION_FILE}"
+
+# Extract placeholders present in file and...
+echo "Generating file '${DESTINATION_FILE}' ..."
+for P in `${GREP} -RoE '\{[a-zA-Z_]+\}' "${DESTINATION_FILE}" | ${SORT} | ${UNIQ}`
 do
-    echo "Generating file '${VHOST_DST}' ..."
+    # Find value for placeholder
+    eval REPLACEMENT="\$$P"
 
-    # Extract placeholders present in file and...
-    PLACEHOLDERS=`${GREP} -RoE '\{[a-zA-Z_]+\}' "${FILE}" | ${SORT} | ${UNIQ}`
-    for P in $PLACEHOLDERS
-    do
-        # Find value for placeholder
-        eval REPLACEMENT="\$$P"
-        echo "Replacing: '${P}' -> '${REPLACEMENT}'"
+    echo "Replacing: $P -> $REPLACEMENT"
 
-        # Expression for replacement
-        REGEX="s/${P//\//\\/}/${REPLACEMENT//\//\\/}/g"
+    # Escape replacement value
+    REPLACEMENT="${REPLACEMENT//\//\\/}"
+    REPLACEMENT="${REPLACEMENT//\./\\.}"
 
-        # Replace value pof placeholder
-        $CAT "${VHOST_SRC}" | $SED -e "${REGEX}" > "${VHOST_DST}"
-    done
+
+    # Expression for replacement
+    REGEX="s/${P//\//\\/}/${REPLACEMENT}/g"
+
+    # Replace value pof placeholder
+    $SED -e "${REGEX}" -i"" ${DESTINATION_FILE}
 done
 
 # Restore PWD

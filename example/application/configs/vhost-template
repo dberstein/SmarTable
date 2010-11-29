@@ -1,11 +1,11 @@
 <VirtualHost *:80>
-   DocumentRoot "{PATH}/public"
-   ServerName example.local
+   DocumentRoot "{APPLICATION_ROOT}/public"
+   ServerName {APPLICATION_DOMAIN}
 
    # This should be omitted in the production environment
-   SetEnv APPLICATION_ENV development
+   SetEnv APPLICATION_ENV {APPLICATION_ENVIRONMENT}
     
-   <Directory "{PATH}/public">
+   <Directory "{APPLICATION_ROOT}/public">
        Options Indexes MultiViews FollowSymLinks
        AllowOverride All
        Order allow,deny
